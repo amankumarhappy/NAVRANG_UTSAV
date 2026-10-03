@@ -96,6 +96,7 @@ export default async function HomePage() {
           <div className="rule-grid">
             {eventConfig.entryRules.map(([title, description]) => <article className="rule" key={title}><h3>{title}</h3><p>{description}</p></article>)}
           </div>
+          <p className="toast-note space-top">Your cooperation makes the celebration successful.<br />Celebrate with joy. Maintain discipline. Respect the campus.</p>
           <p className="toast-note space-top"><strong>Essential Facilities:</strong> Clean drinking water will be available at designated points across the venue. For accessibility, first-aid or other assistance, please approach the event help desk or organising team.</p>
         </div>
       </section>

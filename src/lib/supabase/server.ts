@@ -2,21 +2,16 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { SerializeOptions } from "cookie";
 import { cookies } from "next/headers";
+import { getSupabasePublicConfig, getSupabaseServiceConfig } from "@/lib/supabase/config";
 
 type CookieOptions = Partial<SerializeOptions>;
 
-function requiredEnv(name: string) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
-  return value;
-}
-
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
+  const { url, key } = getSupabasePublicConfig();
   return createServerClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-      requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -37,20 +32,19 @@ export async function createSupabaseServerClient() {
 }
 
 export function createServiceSupabaseClient(): SupabaseClient {
-  const secretKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secretKey) throw new Error("Missing required environment variable: SUPABASE_SECRET_KEY");
+  const { url, key } = getSupabaseServiceConfig();
   return createClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    secretKey,
+    url,
+    key,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }
 
 export function createPublicSupabaseClient(): SupabaseClient {
+  const { url, key } = getSupabasePublicConfig();
   return createClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-      requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    url,
+    key,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }

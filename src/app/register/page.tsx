@@ -16,16 +16,18 @@ export default async function RegisterPage() {
   const hasOfficialUpi = !!site.upi.id.trim() && !!site.upi.name.trim();
   const active = status === "ready" && hasOfficialUpi;
   const unavailableMessage = status === "unconfigured"
-    ? "Registration setup is being completed. Please check back shortly."
-    : status === "unavailable"
-      ? "We’re temporarily unable to load registration details. Please try again shortly."
-      : status === "not-found"
-        ? "Registration details are not available yet. Please check back shortly."
-        : status === "closed"
-          ? "Registration for this event is currently closed."
-          : !hasOfficialUpi
-              ? "Registration will open once the official UPI ID and name are confirmed."
-              : null;
+    ? "Registration is unavailable because event configuration is incomplete."
+    : status === "invalid-event-id"
+      ? "Registration is unavailable because the configured event ID is invalid."
+      : status === "network-error" || status === "rpc-error"
+        ? "Registration details are temporarily unavailable. Please try again shortly."
+        : status === "not-found"
+          ? "Registration details are not available yet. Please check back shortly."
+          : status === "closed"
+            ? "Registration for this event is currently closed."
+            : !hasOfficialUpi
+                ? "Registration will open once the official UPI ID and name are confirmed."
+                : null;
   const paymentUri = site.upi.id.trim() && site.upi.name.trim()
     ? `upi://pay?${new URLSearchParams({ pa: site.upi.id, pn: site.upi.name, cu: "INR" })}`
     : "";
@@ -51,6 +53,7 @@ export default async function RegisterPage() {
           <strong>Registration fee</strong>
           <div className="payment-fee">{formatRupees(fee)}</div>
           <p>per student</p>
+          {active && <p className="payment-verification-warning" role="status">Registration is open. Payment verification required.</p>}
           <p style={{ marginTop: 16 }}><strong>Official UPI name</strong>{site.upi.name || "Not yet confirmed — do not pay until the official UPI name is published."}</p>
           <p><strong>UPI ID</strong>{site.upi.id || "Not yet configured — do not pay until the official UPI ID is published."}</p>
           <p className="payment-verification-warning" role="note">Verify the UPI name before making payment.</p>

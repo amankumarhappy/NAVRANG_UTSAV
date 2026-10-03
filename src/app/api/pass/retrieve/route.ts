@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "We couldn't match those details. Check them and try again." }, { status: 404 });
   }
   if (registration.status === "PENDING") {
-    return NextResponse.json({ status: "PENDING", message: "Your payment is still under verification." }, { status: 200 });
+    return NextResponse.json({ status: "PENDING", message: "Payment verification is pending. Your entry pass will be issued after approval." }, { status: 200 });
   }
   if (registration.status === "REJECTED") {
     return NextResponse.json({ status: "REJECTED", message: "Your registration was not approved. Contact the event team." }, { status: 200 });
