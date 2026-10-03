@@ -1,5 +1,4 @@
 export const eventConfig = {
-  id: process.env.NEXT_PUBLIC_EVENT_ID ?? "",
   title: "NAVRANG ’26 — Dandiya Night 2026",
   date: "2026-10-14",
   startsAt: "2026-10-14T15:00:00+05:30",

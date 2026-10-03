@@ -1,5 +1,0 @@
-[functions.registration-automation]
-verify_jwt = false
-
-[functions.telegram-approval]
-verify_jwt = false

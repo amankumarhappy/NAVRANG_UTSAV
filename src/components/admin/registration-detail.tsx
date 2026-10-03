@@ -1,9 +1,15 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { get, push, ref, update } from "firebase/database";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { isAdminEmail } from "@/config/firebase-admins";
+import { site } from "@/config/site";
+import { getFirebaseAuth } from "@/lib/firebase/auth";
+import { getFirebaseDatabase } from "@/lib/firebase/database";
+import { hashIdentity, newOpaqueId } from "@/lib/firebase/registrations";
 import { PassCard } from "@/components/pass/pass-retrieval";
 
 type Registration = {
@@ -14,10 +20,33 @@ type Registration = {
 };
 
 async function fetchRegistration(registrationId: string): Promise<Registration> {
-  const response = await fetch(`/api/admin/registrations/${encodeURIComponent(registrationId)}`);
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error ?? "Registration details could not be loaded.");
-  return data.registration;
+  const database = getFirebaseDatabase();
+  const snapshot = await get(ref(database, `registrations/${registrationId}`));
+  const record = snapshot.val();
+  if (!record || record.registrationId !== registrationId) throw new Error("Registration details could not be loaded.");
+  const screenshotPath = String(record.payment?.screenshotPath ?? "").replace(/^\/+/, "");
+  const screenshot = screenshotPath ? await get(ref(database, screenshotPath)) : null;
+  const createdAt = record.createdAt;
+  const updatedAt = record.updatedAt;
+  return {
+    id: registrationId,
+    registration_id: registrationId,
+    full_name: record.fullName,
+    roll_number: record.rollNumber,
+    branch: record.branch,
+    batch: record.batch,
+    phone: record.phone,
+    email: record.email,
+    college: record.college,
+    transaction_id: record.payment?.utr ?? "",
+    amount_paid: record.payment?.amount ?? 0,
+    payment_screenshot_url: screenshot?.val()?.dataUrl ?? "",
+    status: record.status,
+    pass_generated: record.passGenerated === true,
+    qr_token: record.qrToken ?? undefined,
+    created_at: new Date(typeof createdAt === "number" ? createdAt : Date.parse(createdAt)).toISOString(),
+    updated_at: new Date(typeof updatedAt === "number" ? updatedAt : Date.parse(updatedAt)).toISOString(),
+  };
 }
 
 export function RegistrationDetail({ registrationId }: { registrationId: string }) {
@@ -60,11 +89,56 @@ export function RegistrationDetail({ registrationId }: { registrationId: string 
     if (!action || busy) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/admin/registrations/${encodeURIComponent(registrationId)}/action`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, reason }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "The registration could not be updated.");
+      const user = getFirebaseAuth().currentUser;
+      if (!user || !isAdminEmail(user.email)) throw new Error("Access denied.");
+      if (action === "MANUAL_APPROVE" && !reason.trim()) throw new Error("A manual approval reason is required.");
+      const database = getFirebaseDatabase();
+      const path = `registrations/${registrationId}`;
+      const snapshot = await get(ref(database, path));
+      const record = snapshot.val();
+      if (!record) throw new Error("Registration not found.");
+      if (["APPROVE", "MANUAL_APPROVE", "REJECT"].includes(action) && record.status !== "PENDING") {
+        throw new Error("Only pending registrations can be updated.");
+      }
+      if (action === "REISSUE" && record.status !== "APPROVED") throw new Error("Only approved registrations can have a pass reissued.");
+
+      const approved = action === "APPROVE" || action === "MANUAL_APPROVE" || action === "REISSUE";
+      const nextStatus = action === "REJECT" ? "REJECTED" : approved ? "APPROVED" : record.status;
+      const nextQrToken = approved ? newOpaqueId(32) : null;
+      const timestamp = Date.now();
+      const eventFields = { eventName: site.name, eventTitle: site.title, eventDate: site.eventDateLabel, eventTime: site.time, venue: site.venue };
+      const pass = approved ? {
+        registrationId,
+        fullName: record.fullName,
+        rollNumber: record.rollNumber,
+        branch: record.branch,
+        batch: record.batch,
+        qrToken: nextQrToken,
+        ...eventFields,
+      } : null;
+      const emailHash = await hashIdentity(String(record.email).trim().toLowerCase());
+      const phoneHash = await hashIdentity(String(record.phone).replace(/\D/g, "").replace(/^91(?=\d{10}$)/, ""));
+      const actionName = action === "MANUAL_APPROVE" ? "MANUAL_APPROVED" : action === "APPROVE" ? "APPROVED" : action === "REJECT" ? "REJECTED" : "PASS_REISSUED";
+      const auditRef = push(ref(database, "auditLogs"));
+      if (!auditRef.key) throw new Error("Audit record could not be created.");
+      const updates: Record<string, unknown> = {
+        [`${path}/status`]: nextStatus,
+        [`${path}/qrToken`]: nextQrToken,
+        [`${path}/passGenerated`]: approved,
+        [`${path}/updatedAt`]: timestamp,
+        [`${path}/verifiedAt`]: approved || action === "REJECT" ? timestamp : null,
+        [`${path}/verifiedBy`]: approved || action === "REJECT" ? user.email : null,
+        [`passLookups/${registrationId}/${emailHash}`]: approved
+          ? { status: "APPROVED", pass }
+          : { status: nextStatus, message: action === "REJECT" ? "Your registration was not approved. Contact the event team." : "Payment verification is pending. Your entry pass will be issued after approval." },
+        [`passLookups/${registrationId}/${phoneHash}`]: approved
+          ? { status: "APPROVED", pass }
+          : { status: nextStatus, message: action === "REJECT" ? "Your registration was not approved. Contact the event team." : "Payment verification is pending. Your entry pass will be issued after approval." },
+        [`auditLogs/${auditRef.key}`]: { registrationId, action: actionName, adminEmail: user.email, reason: reason.trim() || null, timestamp },
+      };
+      if (record.qrToken) updates[`publicPasses/${record.qrToken}`] = null;
+      if (pass && nextQrToken) updates[`publicPasses/${nextQrToken}`] = { ...pass, status: "APPROVED" };
+      await update(ref(database), updates);
       toast.success(action === "REJECT" ? "Registration rejected" : action === "REISSUE" ? "Pass reissued" : "Payment approved");
       setDialogOpen(false);
       setReason("");
@@ -108,12 +182,12 @@ export function RegistrationDetail({ registrationId }: { registrationId: string 
     <div className="event-facts admin-detail-facts">{details.map(([label, value]) => <div className="fact" key={label}><div className="fact-label">{label}</div><div className="fact-sub" style={{ color: "var(--ink)", fontSize: 13, marginTop: 9, overflowWrap: "anywhere" }}>{value}</div></div>)}</div>
     <section className="section" style={{ paddingBlock: 36 }}>
       <h2 className="display" style={{ fontSize: 34 }}>Payment screenshot</h2>
-      <a href={registration.payment_screenshot_url} target="_blank" rel="noreferrer" aria-label="Open private payment screenshot in a new tab">
+      {registration.payment_screenshot_url ? <a href={registration.payment_screenshot_url} target="_blank" rel="noreferrer" aria-label="Open private payment screenshot in a new tab">
         {/* A signed private-storage URL is dynamic per admin and intentionally bypasses the Next image optimizer. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={registration.payment_screenshot_url} alt="Private payment screenshot for manual admin review" loading="lazy" decoding="async" style={{ display: "block", maxWidth: "100%", maxHeight: 620, width: "auto", height: "auto", objectFit: "contain", border: "1px solid var(--line)", background: "white" }} />
-      </a>
-      <p className="toast-note">This private signed link expires in five minutes.</p>
+      </a> : <p className="form-locked" role="status">No payment screenshot is attached to this registration.</p>}
+      <p className="toast-note">Screenshots are loaded only for the registration under review.</p>
     </section>
     {showPass && registration.qr_token && <PassCard pass={{ registrationId: registration.registration_id, fullName: registration.full_name, rollNumber: registration.roll_number, branch: registration.branch, batch: registration.batch, qrToken: registration.qr_token }} />}
     <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>

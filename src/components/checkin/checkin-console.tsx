@@ -4,20 +4,10 @@ import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser"
 import { Check, CircleAlert, Search, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { checkinByQrToken, checkinByRegistrationId, searchFirebaseRegistrations, type FirebaseCheckinCandidate, type FirebaseCheckinResult } from "@/lib/firebase/checkin";
 
-type CheckinResult = {
-  status: "ALLOWED" | "ALREADY_CHECKED_IN" | "INVALID" | "NOT_APPROVED";
-  full_name?: string;
-  registration_id?: string;
-  branch?: string;
-  batch?: string;
-  checked_in_at?: string;
-  message?: string;
-};
-type Candidate = {
-  id: string; registration_id: string; full_name: string; roll_number: string;
-  branch: string; batch: string; status: string; checked_in_at: string | null;
-};
+type CheckinResult = FirebaseCheckinResult;
+type Candidate = FirebaseCheckinCandidate;
 
 export function CheckinConsole() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -33,25 +23,29 @@ export function CheckinConsole() {
   const [reason, setReason] = useState("");
   const [searching, setSearching] = useState(false);
   const [manualBusy, setManualBusy] = useState(false);
+  const [manualToken, setManualToken] = useState("");
+  const [manualTokenBusy, setManualTokenBusy] = useState(false);
 
   const checkToken = useCallback(async (token: string) => {
-    if (scanBusy.current) return;
+    const cleanToken = token.trim();
+    if (!cleanToken || scanBusy.current) return;
     scanBusy.current = true;
     setResult(null);
+    setCameraError("");
     try {
-      const response = await fetch("/api/admin/checkin", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
-      const data: CheckinResult & { error?: string } = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "QR validation could not be completed.");
+      const data = cleanToken.startsWith("REG-")
+        ? await checkinByRegistrationId(cleanToken, "Manual check-in via token entry")
+        : await checkinByQrToken(cleanToken);
       setResult(data);
       if (data.status === "ALLOWED") toast.success("Check-in successful");
       else if (data.status === "ALREADY_CHECKED_IN") toast.warning("Already checked in");
-      else toast.error(data.status === "INVALID" ? "Invalid QR" : "Pass is not approved");
+      else if (data.status === "NOT_APPROVED") toast.error(data.message || "Pass is not approved");
+      else toast.error(data.message || "Invalid QR");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "QR validation could not be completed.");
       setResult({ status: "INVALID", message: "Please try again or search the registration manually." });
+    } finally {
+      scanBusy.current = false;
     }
   }, []);
 
@@ -61,29 +55,34 @@ export function CheckinConsole() {
     setScanning(false);
   }, []);
 
-  const startScanner = async () => {
+  const startScanner = useCallback(async () => {
     setCameraError("");
     setResult(null);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("Camera access is required to scan the participant QR code.");
+      return;
+    }
     if (!videoRef.current) {
       setCameraError("Camera preview is unavailable. Please reload and try again.");
       return;
     }
-    scanBusy.current = false;
+    if (scanBusy.current) return;
     setScanning(true);
     try {
       const reader = new BrowserMultiFormatReader();
       const controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (decoded) => {
-        if (decoded) {
-          void checkToken(decoded.getText());
-          stopScanner();
-        }
+        if (!decoded) return;
+        const token = decoded.getText().trim();
+        if (!token) return;
+        void checkToken(token);
+        stopScanner();
       });
       controlsRef.current = controls;
     } catch {
       setScanning(false);
-      setCameraError("Camera could not be started. Allow camera access in your browser settings or search manually.");
+      setCameraError("Camera access is required to scan the participant QR code. Allow camera permission or enter the QR/Registration Token manually.");
     }
-  };
+  }, [checkToken, stopScanner]);
 
   useEffect(() => () => controlsRef.current?.stop(), []);
 
@@ -92,11 +91,7 @@ export function CheckinConsole() {
     setSelected(null);
     setResult(null);
     try {
-      const params = new URLSearchParams({ q: query, by: searchBy });
-      const response = await fetch(`/api/admin/checkin/search?${params}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Search could not be completed.");
-      setMatches(data.rows);
+      setMatches(await searchFirebaseRegistrations(query, searchBy));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Search could not be completed.");
     } finally {
@@ -113,12 +108,7 @@ export function CheckinConsole() {
     if (!selected || !reason.trim()) return;
     setManualBusy(true);
     try {
-      const response = await fetch("/api/admin/checkin", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ manual: true, registrationId: selected.registration_id, reason }),
-      });
-      const data: CheckinResult & { error?: string } = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Manual check-in could not be completed.");
+      const data = await checkinByRegistrationId(selected.registration_id, reason);
       setResult(data);
       if (data.status === "ALLOWED") toast.success("Manual check-in successful");
       else if (data.status === "ALREADY_CHECKED_IN") toast.warning("Already checked in");
@@ -139,9 +129,26 @@ export function CheckinConsole() {
     <div className="section-heading"><span className="eyebrow">Gate operations</span><h2>NAVRANG 26<br />Entry check-in</h2><p>Scan the secure entry QR. The server checks approval status and records each check-in atomically.</p></div>
     <div className="scanner-window">
       <video ref={videoRef} aria-label="Camera view for scanning an entry pass QR code" muted playsInline />
-      {!scanning && <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center", padding: 28, color: "white" }}>Position the pass QR inside the camera view.<br />Camera access is required.</div>}
+      {!scanning && <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center", padding: 28, color: "white" }}>Position the pass QR inside the camera view.<br />Camera access is required to scan the participant QR code.</div>}
     </div>
     {cameraError && <p className="form-locked" role="alert">{cameraError}</p>}
+    <div className="lookup-result">
+      <span className="eyebrow">Manual fallback</span>
+      <h3 className="display" style={{ fontSize: 24, margin: "12px 0" }}>Enter QR/Registration Token Manually</h3>
+      <div className="field">
+        <label htmlFor="manual-token">QR token or registration ID</label>
+        <input id="manual-token" value={manualToken} onChange={(e) => setManualToken(e.target.value.trimStart())} placeholder="Enter QR token or REG-XXXXXXXXXXXX" />
+      </div>
+      <button className="button" disabled={manualTokenBusy || !manualToken.trim()} onClick={async () => {
+        if (!manualToken.trim()) return;
+        setManualTokenBusy(true);
+        try {
+          await checkToken(manualToken);
+        } finally {
+          setManualTokenBusy(false);
+        }
+      }}>{manualTokenBusy ? "Verifying token…" : "Verify token"}</button>
+    </div>
     {result && <div className={`scanner-feedback ${result.status === "INVALID" || result.status === "NOT_APPROVED" ? "error" : ""}`} role="status">
       <strong>{result.status === "ALLOWED" ? <Check size={17} aria-hidden="true" /> : result.status === "INVALID" || result.status === "NOT_APPROVED" ? <CircleAlert size={17} aria-hidden="true" /> : <ShieldCheck size={17} aria-hidden="true" />} {statusHeading}</strong>
       {result.full_name && <p style={{ margin: "10px 0 0" }}>{result.full_name} · {result.registration_id}<br />{result.branch} · Batch {result.batch}</p>}

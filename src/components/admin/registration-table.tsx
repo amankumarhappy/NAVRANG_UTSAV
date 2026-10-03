@@ -1,18 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { onValue, ref } from "firebase/database";
+import { useEffect, useState } from "react";
 import { eventConfig } from "@/config/event";
+import { getFirebaseDatabase } from "@/lib/firebase/database";
 
 type RegistrationRow = {
   registration_id: string; full_name: string; roll_number: string; branch: string; batch: string;
   phone: string; email: string; transaction_id: string; amount_paid: number; status: string; created_at: string;
+  checked_in_at: string | null;
+};
+
+type FirebaseRegistration = {
+  registrationId: string; fullName: string; rollNumber: string; branch: string; batch: string;
+  phone: string; email: string; payment?: { utr?: string; amount?: number };
+  status: string; createdAt?: number | string; checkedIn?: boolean; checkedInAt?: number | string | null;
 };
 
 export function RegistrationTable() {
-  const [rows, setRows] = useState<RegistrationRow[]>([]);
-  const [count, setCount] = useState(0);
+  const [sourceRows, setSourceRows] = useState<RegistrationRow[]>([]);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchBy, setSearchBy] = useState("name");
@@ -26,29 +33,62 @@ export function RegistrationTable() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
 
-  const load = useCallback(async () => {
-    setBusy(true);
-    setError("");
-    const query = new URLSearchParams({ page: String(page), search, searchBy, status, branch, batch, from, to, sort, direction });
-    try {
-      const response = await fetch(`/api/admin/registrations?${query}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Registrations could not be loaded.");
-      setRows(data.rows);
-      setCount(data.count);
-    } catch (reason) {
-      const message = reason instanceof Error ? reason.message : "Registrations could not be loaded.";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setBusy(false);
-    }
-  }, [page, search, searchBy, status, branch, batch, from, to, sort, direction]);
-
   useEffect(() => {
-    const timer = setTimeout(() => { void load(); }, 250);
-    return () => clearTimeout(timer);
-  }, [load]);
+    try {
+      return onValue(ref(getFirebaseDatabase(), "registrations"), (snapshot) => {
+        const records = snapshot.val() as Record<string, FirebaseRegistration> | null;
+        setSourceRows(Object.values(records ?? {}).map((record) => ({
+          registration_id: record.registrationId,
+          full_name: record.fullName,
+          roll_number: record.rollNumber,
+          branch: record.branch,
+          batch: record.batch,
+          phone: record.phone,
+          email: record.email,
+          transaction_id: record.payment?.utr ?? "",
+          amount_paid: record.payment?.amount ?? 0,
+          status: record.status,
+          created_at: typeof record.createdAt === "number" ? new Date(record.createdAt).toISOString() : String(record.createdAt ?? ""),
+          checked_in_at: record.checkedInAt ? new Date(record.checkedInAt).toISOString() : null,
+        })));
+        setBusy(false);
+      }, (listenerError) => {
+        console.error("Firebase registrations listener failed", listenerError);
+        setError("Registrations could not be loaded. Please try again.");
+        setBusy(false);
+      });
+    } catch (listenerError) {
+      console.error("Firebase registrations listener could not start", listenerError);
+      queueMicrotask(() => {
+        setError("Registrations could not be loaded. Please try again.");
+        setBusy(false);
+      });
+    }
+  }, []);
+
+  const filteredRows = sourceRows.filter((row) => {
+    const searchValues: Record<string, string> = {
+      name: row.full_name,
+      registration: row.registration_id,
+      transaction: row.transaction_id,
+      roll: row.roll_number,
+      email: row.email,
+      phone: row.phone,
+    };
+    const value = searchValues[searchBy] ?? row.full_name;
+    const date = row.created_at.slice(0, 10);
+    return (!search || value.toLowerCase().includes(search.trim().toLowerCase()))
+      && (!status || row.status === status)
+      && (!branch || row.branch === branch)
+      && (!batch || row.batch === batch)
+      && (!from || date >= from)
+      && (!to || date <= to);
+  }).sort((left, right) => {
+    const comparison = String(left[sort as keyof RegistrationRow] ?? "").localeCompare(String(right[sort as keyof RegistrationRow] ?? ""), undefined, { numeric: true });
+    return direction === "asc" ? comparison : -comparison;
+  });
+  const count = filteredRows.length;
+  const rows = filteredRows.slice((page - 1) * 25, page * 25);
 
   const toggleSort = (key: string) => {
     setSort(key);

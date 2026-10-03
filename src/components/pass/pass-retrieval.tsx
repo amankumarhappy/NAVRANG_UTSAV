@@ -1,10 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { get, ref } from "firebase/database";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { toast } from "sonner";
 import { site } from "@/config/site";
+import { ensurePublicFirebaseSession } from "@/lib/firebase/auth";
+import { getFirebaseDatabase } from "@/lib/firebase/database";
+import { hashIdentity } from "@/lib/firebase/registrations";
 
 type PassDetails = {
   registrationId: string;
@@ -75,13 +79,14 @@ export function PassRetrieval() {
     setBusy(true);
     setResult(null);
     try {
-      const response = await fetch("/api/pass/retrieve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationId, identity }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "We could not retrieve your pass. Please try again.");
+      const normalizedIdentity = identity.includes("@")
+        ? identity.trim().toLowerCase()
+        : identity.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+      const identityHash = await hashIdentity(normalizedIdentity);
+      await ensurePublicFirebaseSession();
+      const snapshot = await get(ref(getFirebaseDatabase(), `passLookups/${registrationId}/${identityHash}`));
+      const data = snapshot.val() as { status: string; message?: string; pass?: PassDetails } | null;
+      if (!data) throw new Error("We couldn't match those details. Check them and try again.");
       setResult(data);
       if (data.status === "APPROVED") toast.success("Pass retrieved");
     } catch (error) {

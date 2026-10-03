@@ -1,13 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { eventConfig } from "@/config/event";
 import { site } from "@/config/site";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensurePublicFirebaseSession } from "@/lib/firebase/auth";
+import { compressPaymentScreenshot } from "@/lib/image/compress-payment-screenshot";
+import { createFirebaseRegistration } from "@/lib/firebase/registrations";
 import { registrationSchema, type RegistrationInput } from "@/lib/validation/registration";
 import { formatRupees } from "@/lib/utils";
 
@@ -21,10 +24,24 @@ export function RegistrationForm({ fee, eventActive }: Props) {
   const [acknowledgementError, setAcknowledgementError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+  const previewUrlRef = useRef("");
+  const [compressedSize, setCompressedSize] = useState<number | null>(null);
   const { register, handleSubmit, formState: { errors } } = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
     defaultValues: { college: eventConfig.defaultCollege },
   });
+
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
+
+  const selectFile = (selected: File | null) => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = selected ? URL.createObjectURL(selected) : "";
+    setPreviewUrl(previewUrlRef.current);
+    setFile(selected);
+  };
 
   const submit = async (values: RegistrationInput) => {
     if (!acknowledged) {
@@ -40,32 +57,14 @@ export function RegistrationForm({ fee, eventActive }: Props) {
       return;
     }
     setBusy(true);
-    setLoadingMessage("Preparing secure upload…");
+    setLoadingMessage("Compressing payment screenshot…");
     setFileError("");
     try {
-      const uploadResponse = await fetch("/api/registration/upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentType: file.type, size: file.size, fileName: file.name }),
-      });
-      const upload = await uploadResponse.json();
-      if (!uploadResponse.ok) throw new Error(upload.error ?? "Payment screenshot could not be uploaded. Please try again.");
-
-      setLoadingMessage("Uploading payment screenshot…");
-      const supabase = createSupabaseBrowserClient();
-      const { error: uploadError } = await supabase.storage
-        .from("payment-screenshots")
-        .uploadToSignedUrl(upload.path, upload.token, file, { contentType: file.type, upsert: false });
-      if (uploadError) throw new Error("Payment screenshot could not be uploaded. Please try again.");
-
-      setLoadingMessage("Submitting registration…");
-      const response = await fetch("/api/registration", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, paymentScreenshotPath: upload.path }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "We could not complete your registration. Please try again.");
+      const screenshot = await compressPaymentScreenshot(file);
+      setCompressedSize(screenshot.sizeBytes);
+      await ensurePublicFirebaseSession();
+      setLoadingMessage("Saving your registration securely…");
+      const result = await createFirebaseRegistration(values, screenshot);
       toast.success("Registration submitted");
       router.push(`/registration-success?id=${encodeURIComponent(result.registrationId)}`);
     } catch (error) {
@@ -110,19 +109,21 @@ export function RegistrationForm({ fee, eventActive }: Props) {
           <div className="upload-field">
             <input id="paymentScreenshot" type="file" accept={eventConfig.payment.acceptedExtensions.join(",")} onChange={(event) => {
               const selected = event.target.files?.[0] ?? null;
+              setCompressedSize(null);
               if (selected && !eventConfig.payment.acceptedMimeTypes.some((type) => type === selected.type)) {
-                setFile(null);
+                selectFile(null);
                 setFileError("Choose a PNG, JPG, JPEG or WEBP image.");
               } else if (selected && selected.size > eventConfig.payment.maxScreenshotBytes) {
-                setFile(null);
+                selectFile(null);
                 setFileError("The screenshot must be 5MB or smaller.");
               } else {
-                setFile(selected);
+                selectFile(selected);
                 setFileError("");
               }
             }} aria-describedby="screenshot-help" />
             <p id="screenshot-help" className="help-text">PNG, JPG, JPEG or WEBP · Max 5MB. Make sure the transaction/UTR number is clearly visible in the screenshot.</p>
           </div>
+          {previewUrl && <div className="screenshot-preview"><Image src={previewUrl} alt="Selected payment screenshot preview" width={240} height={180} unoptimized style={{ width: "min(100%, 240px)", height: "auto", objectFit: "contain" }} /><span>{file?.name}{compressedSize ? ` · ${(compressedSize / 1024).toFixed(0)} KB compressed` : " · preview"}</span></div>}
           <span className="field-error" role="alert">{fileError}</span>
         </div>
         <label className="checkline"><input type="checkbox" checked={acknowledged} onChange={(event) => { setAcknowledged(event.target.checked); setAcknowledgementError(""); }} aria-describedby="verification-ack-error" /> <span>I understand that my payment must be verified by an authorised admin before an entry pass is issued.</span></label>

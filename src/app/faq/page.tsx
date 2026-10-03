@@ -1,12 +1,12 @@
 import { faqs } from "@/config/faq";
-import { getActiveEvent } from "@/lib/supabase/event";
+import { getFirebaseEvent } from "@/lib/firebase/event";
 
 export const revalidate = 60;
 
 export default async function FAQPage() {
-  const event = await getActiveEvent();
-  const eventDateAnswer = event?.event_date
-    ? `The event is on ${new Date(`${event.event_date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}, from 3:00 PM to 8:00 PM.`
+  const { event } = await getFirebaseEvent();
+  const eventDateAnswer = event?.date
+    ? `The event is on ${new Date(`${event.date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}, from 3:00 PM to 8:00 PM.`
     : faqs.find(([question]) => question === "When is the event?")?.[1] ?? "";
   return <>
     <section className="page-hero"><div className="container"><span className="eyebrow">Good to know</span><h1>Frequently asked.</h1><p>Clear details for your NAVRANG ’26 evening.</p></div></section>

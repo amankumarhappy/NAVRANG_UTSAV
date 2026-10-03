@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getFirebaseAuth, signOut as firebaseSignOut } from "@/lib/firebase/auth";
 
 export function AdminHeader() {
   const router = useRouter();
   async function signOut() {
-    const { error } = await createSupabaseBrowserClient().auth.signOut();
-    if (error) {
+    try {
+      await firebaseSignOut(getFirebaseAuth());
+      router.replace("/admin/login");
+    } catch {
       toast.error("Could not sign out. Please try again.");
-      return;
     }
-    router.replace("/admin/login");
   }
   return <div className="admin-header"><div className="container admin-header-inner">
     <div className="admin-heading">NAVRANG 26 ADMIN<small>EVENT OPERATIONS · GEC BUXAR</small></div>

@@ -1,0 +1,81 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "events": {
+      "NAVRANG_2026": {
+        ".read": true,
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")"
+      }
+    },
+    "registrations": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      ".indexOn": [
+        "qrToken"
+      ],
+      "$registrationId": {
+        ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth !== null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && newData.exists() && root.child('events/NAVRANG_2026/isActive').val() === true && root.child('events/NAVRANG_2026/registrationFee').val() === 200 && newData.child('createdBy').val() === auth.uid && newData.child('eventId').val() === 'NAVRANG_2026' && newData.child('status').val() === 'PENDING' && newData.child('passGenerated').val() === false && newData.child('qrToken').val() === null && newData.child('checkedIn').val() === false && newData.child('verifiedAt').val() === null && newData.child('verifiedBy').val() === null)",
+        ".validate": "newData.hasChildren(['registrationId','eventId','fullName','email','phone','rollNumber','branch','batch','college','createdBy','payment','status','passGenerated','createdAt','updatedAt','checkedIn']) && newData.child('registrationId').val() === $registrationId && $registrationId.matches(/^REG-[A-F0-9]{12}$/) && newData.child('eventId').val() === 'NAVRANG_2026' && newData.child('createdBy').isString() && newData.child('fullName').isString() && newData.child('fullName').val().length >= 2 && newData.child('fullName').val().length <= 120 && newData.child('email').isString() && newData.child('email').val().length <= 254 && newData.child('phone').isString() && newData.child('phone').val().length >= 10 && newData.child('phone').val().length <= 20 && newData.child('rollNumber').isString() && newData.child('rollNumber').val().length >= 2 && newData.child('rollNumber').val().length <= 40 && newData.child('branch').isString() && newData.child('batch').val().matches(/^(2023|2024|2025|2026)$/) && newData.child('college').isString() && newData.child('payment/amount').val() === 200 && newData.child('payment/utr').val().matches(/^[0-9]{12}$/) && newData.child('payment/upiName').isString() && newData.child('payment/screenshotAvailable').val() === true && newData.child('payment/screenshotPath').val() === '/paymentScreenshots/' + $registrationId && ((newData.child('status').val() === 'APPROVED' && newData.child('passGenerated').val() === true && newData.child('qrToken').val().matches(/^[A-F0-9]{64}$/)) || ((newData.child('status').val() === 'PENDING' || newData.child('status').val() === 'REJECTED') && newData.child('passGenerated').val() === false && newData.child('qrToken').val() === null)) && (newData.child('checkedIn').val() === false || (newData.child('status').val() === 'APPROVED' && newData.child('passGenerated').val() === true && newData.child('checkedIn').val() === true))"
+      }
+    },
+    "utrIndex": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "$utr": {
+        ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || auth !== null && auth.token.firebase.sign_in_provider === 'anonymous'",
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth !== null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && newData.exists() && root.child('events/NAVRANG_2026/isActive').val() === true && root.child('events/NAVRANG_2026/registrationFee').val() === 200 && $utr.matches(/^[0-9]{12}$/) && newData.val() === true)",
+        ".validate": "newData.val() === true"
+      }
+    },
+    "identityIndex": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "NAVRANG_2026": {
+        "$kind": {
+          "$hash": {
+            ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || auth !== null && auth.token.firebase.sign_in_provider === 'anonymous'",
+            ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth !== null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && newData.exists() && root.child('events/NAVRANG_2026/isActive').val() === true && root.child('events/NAVRANG_2026/registrationFee').val() === 200 && ($kind === 'email' || $kind === 'phone' || $kind === 'roll') && $hash.matches(/^[a-f0-9]{64}$/))",
+            ".validate": "newData.val() === true"
+          }
+        }
+      }
+    },
+    "paymentScreenshots": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "$registrationId": {
+        ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth !== null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && newData.exists() && root.child('events/NAVRANG_2026/isActive').val() === true && root.child('events/NAVRANG_2026/registrationFee').val() === 200 && $registrationId.matches(/^REG-[A-F0-9]{12}$/) && newData.child('uploadedBy').val() === auth.uid && newData.child('dataUrl').isString() && newData.child('dataUrl').val().length <= 700000)",
+        ".validate": "newData.hasChildren(['dataUrl','mimeType','sizeBytes','uploadedAt','uploadedBy']) && (newData.child('mimeType').val() === 'image/webp' || newData.child('mimeType').val() === 'image/jpeg') && newData.child('dataUrl').val().matches(/^data:image\\/(webp|jpeg);base64,/) && newData.child('sizeBytes').isNumber() && newData.child('sizeBytes').val() <= 450000"
+      }
+    },
+    "passLookups": {
+      "$registrationId": {
+        ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+        "$identityHash": {
+          ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || auth !== null && auth.token.firebase.sign_in_provider === 'anonymous'",
+          ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth !== null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && newData.exists() && newData.child('status').val() === 'PENDING' && !newData.child('pass').exists())"
+        }
+      }
+    },
+    "publicPasses": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "$qrToken": {
+        ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\") || (auth === null && data.exists())",
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+        ".validate": "newData.child('status').val() === 'APPROVED' && newData.child('qrToken').val() === $qrToken"
+      }
+    },
+    "checkins": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "$registrationId": {
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+        ".validate": "newData.child('registrationId').val() === $registrationId && newData.child('checkedIn').val() === true && newData.child('checkedInAt').isNumber()"
+      }
+    },
+    "auditLogs": {
+      ".read": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")",
+      "$logId": {
+        ".write": "auth !== null && (auth.token.email === \"aryasinhaer2428@gmail.com\" || auth.token.email === \"amankumarhappu1@gmail.com\")"
+      }
+    }
+  }
+}

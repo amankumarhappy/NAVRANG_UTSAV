@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
+import { getFirebaseDatabase } from "@/lib/firebase/database";
 
 type Stats = { total: number; pending: number; approved: number; rejected: number; checkedIn: number };
 
@@ -9,11 +11,25 @@ export function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    fetch("/api/admin/stats").then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Dashboard statistics could not be loaded.");
-      setStats(data);
-    }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Dashboard statistics could not be loaded."));
+    try {
+      return onValue(ref(getFirebaseDatabase(), "registrations"), (snapshot) => {
+        const records = Object.values(snapshot.val() ?? {}) as { status?: string; checkedIn?: boolean }[];
+        setStats({
+          total: records.length,
+          pending: records.filter((record) => record.status === "PENDING").length,
+          approved: records.filter((record) => record.status === "APPROVED").length,
+          rejected: records.filter((record) => record.status === "REJECTED").length,
+          checkedIn: records.filter((record) => record.checkedIn).length,
+        });
+        setError("");
+      }, (reason: Error) => {
+        console.error("Firebase admin stats listener failed", reason);
+        setError("Dashboard statistics could not be loaded.");
+      });
+    } catch (reason) {
+      console.error("Firebase admin stats listener could not start", reason);
+      queueMicrotask(() => setError("Dashboard statistics could not be loaded."));
+    }
   }, []);
   const cards: [string, keyof Stats][] = [["TOTAL REGISTRATIONS", "total"], ["PENDING", "pending"], ["APPROVED", "approved"], ["REJECTED", "rejected"], ["CHECKED IN", "checkedIn"]];
   return <div className="admin-content">

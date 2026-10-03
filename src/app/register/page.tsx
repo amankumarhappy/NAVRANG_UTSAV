@@ -5,22 +5,20 @@ import { PaymentOptions } from "@/components/registration/payment-options";
 import { eventConfig } from "@/config/event";
 import { posters } from "@/config/posters";
 import { site } from "@/config/site";
-import { getActiveEventResult } from "@/lib/supabase/event";
+import { getFirebaseEvent } from "@/lib/firebase/event";
 import { formatRupees } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
-  const { event, status } = await getActiveEventResult();
-  const fee = event?.registration_fee ?? eventConfig.defaultFee;
+  const { event, status } = await getFirebaseEvent();
+  const fee = event?.registrationFee ?? eventConfig.defaultFee;
   const hasOfficialUpi = !!site.upi.id.trim() && !!site.upi.name.trim();
-  const active = status === "ready" && hasOfficialUpi;
+  const active = status === "ready" && !!event?.isActive && hasOfficialUpi;
   const unavailableMessage = status === "unconfigured"
     ? "Registration is unavailable because event configuration is incomplete."
-    : status === "invalid-event-id"
-      ? "Registration is unavailable because the configured event ID is invalid."
-      : status === "network-error" || status === "rpc-error"
-        ? "Registration details are temporarily unavailable. Please try again shortly."
+    : status === "network-error"
+        ? "Registration service is temporarily unavailable. Please try again shortly."
         : status === "not-found"
           ? "Registration details are not available yet. Please check back shortly."
           : status === "closed"
@@ -39,8 +37,8 @@ export default async function RegisterPage() {
         color: { dark: "#32100e", light: "#fff8ec" },
       })
     : null;
-  const dateLabel = event?.event_date
-    ? new Date(`${event.event_date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+  const dateLabel = event?.date
+    ? new Date(`${event.date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : eventConfig.dateLabel;
   return <>
     <section className="page-hero"><div className="container"><span className="eyebrow">Registration · NAVRANG 26</span><h1>Your evening starts here.</h1><p>Complete your details and payment information. The event team will manually verify your payment before approving your pass.</p></div></section>

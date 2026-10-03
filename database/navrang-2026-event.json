@@ -1,0 +1,12 @@
+{
+  "id": "NAVRANG_2026",
+  "name": "NAVRANG ’26 — Dandiya Night 2026",
+  "date": "2026-10-14",
+  "time": "3:00 PM – 8:00 PM Onwards",
+  "venue": "GEC Buxar Campus",
+  "registrationFee": 200,
+  "isActive": true,
+  "eligibility": {
+    "batches": ["2023", "2024", "2025", "2026"]
+  }
+}

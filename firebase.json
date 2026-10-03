@@ -1,0 +1,16 @@
+{
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "anonymous": true
+    }
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "database": { "port": 45000 },
+    "ui": { "enabled": true }
+  }
+}

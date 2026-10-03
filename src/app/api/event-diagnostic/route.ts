@@ -1,26 +1,22 @@
 import { NextResponse } from "next/server";
-import { eventConfig } from "@/config/event";
-import { getSupabaseConfigurationDiagnostic } from "@/lib/supabase/config";
-import { getActiveEventResult } from "@/lib/supabase/event";
+import { getFirebaseEvent } from "@/lib/firebase/event";
 
-/** Development-only, secret-free support endpoint for validating event setup. */
 export async function GET() {
-  if (process.env.NODE_ENV === "production") return new NextResponse(null, { status: 404 });
-
-  const result = await getActiveEventResult();
+  const { event, status } = await getFirebaseEvent();
+  const databaseUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim() ?? "";
   return NextResponse.json({
-    supabase: {
-      ...getSupabaseConfigurationDiagnostic(eventConfig.id),
-      reachable: result.reason !== "network" && result.reason !== "configuration",
+    firebase: {
+      projectConfigured: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      databaseConfigured: !!databaseUrl,
+      reachable: status !== "network-error" && status !== "unconfigured",
     },
-    event: result.event && {
-      id: result.event.id,
-      name: result.event.name,
-      eventDate: result.event.event_date,
-      registrationFee: result.event.registration_fee,
-      isActive: result.event.is_active,
+    event: event && {
+      id: event.id,
+      name: event.name,
+      date: event.date,
+      registrationFee: event.registrationFee,
+      isActive: event.isActive,
     },
-    status: result.status,
-    reason: result.reason,
+    status,
   });
 }

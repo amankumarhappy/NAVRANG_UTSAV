@@ -5,21 +5,21 @@ import { PosterArt } from "@/components/ui/poster-art";
 import { eventConfig } from "@/config/event";
 import { posters } from "@/config/posters";
 import { site } from "@/config/site";
-import { getActiveEvent } from "@/lib/supabase/event";
+import { getFirebaseEvent } from "@/lib/firebase/event";
 import { formatRupees } from "@/lib/utils";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const activeEvent = await getActiveEvent();
-  const dateLabel = activeEvent?.event_date
-    ? new Date(`${activeEvent.event_date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", {
+  const { event } = await getFirebaseEvent();
+  const dateLabel = event?.date
+    ? new Date(`${event.date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", {
         day: "numeric",
         month: "long",
         year: "numeric",
       })
     : eventConfig.dateLabel;
-  const registrationFee = activeEvent?.registration_fee ?? eventConfig.defaultFee;
+  const registrationFee = event?.registrationFee ?? eventConfig.defaultFee;
 
   return (
     <>
@@ -55,7 +55,7 @@ export default async function HomePage() {
             <p>NAVRANG 26 brings the campus together for an evening of Garba, cultural performances and a shared celebration.</p>
           </div>
           <div className="event-facts">
-            <div className="fact"><div className="fact-label">Event</div><div className="fact-value">{activeEvent?.name ?? site.name}</div><div className="fact-sub">{site.title}</div></div>
+            <div className="fact"><div className="fact-label">Event</div><div className="fact-value">{event?.name ?? site.name}</div><div className="fact-sub">{site.title}</div></div>
             <div className="fact"><div className="fact-label">Date</div><div className="fact-value">{dateLabel}</div></div>
             <div className="fact"><div className="fact-label">Time</div><div className="fact-value">{site.time}</div></div>
             <div className="fact"><div className="fact-label">Venue</div><div className="fact-value">{site.venue}</div></div>
