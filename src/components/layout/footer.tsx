@@ -27,7 +27,7 @@ export function Footer() {
         <nav className="footer-links" aria-label="Footer navigation">
           {links.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
           <Link className="admin-link" href="/admin/login">Admin access</Link>
-          <a href="https://github.com/amankumarhappy/NAVRANG_UTSAV" target="_blank" rel="noreferrer" aria-label="NAVRANG repo on GitHub" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, color: "currentColor", opacity: 0.9 }}>
+          <a className="github-link" href="https://github.com/amankumarhappy/NAVRANG_UTSAV" target="_blank" rel="noreferrer" aria-label="Meet the website developer on GitHub" title="Meet the website developer">
             <Github size={16} aria-hidden="true" />
           </a>
         </nav>

@@ -21,7 +21,7 @@ export function AdminHeader() {
     <nav className="admin-nav" aria-label="Admin navigation">
       <Link href="/admin/registrations" style={{ color: "white", fontSize: 12 }}>Registrations</Link>
       <Link href="/admin/checkin" style={{ color: "white", fontSize: 12 }}>Check-in</Link>
-      <a href="https://github.com/amankumarhappy/NAVRANG_UTSAV" target="_blank" rel="noreferrer" aria-label="NAVRANG repo on GitHub" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, color: "white", opacity: 0.9 }}>
+      <a className="github-link github-link-admin" href="https://github.com/amankumarhappy/NAVRANG_UTSAV" target="_blank" rel="noreferrer" aria-label="Meet the website developer on GitHub" title="Meet the website developer">
         <Github size={16} aria-hidden="true" />
       </a>
       <button className="button button-small button-light" onClick={signOut}>Sign out</button>

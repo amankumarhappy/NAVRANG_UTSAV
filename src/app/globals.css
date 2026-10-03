@@ -173,8 +173,40 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .payment-fee { font-family: var(--font-display), serif; font-size: 38px; margin: 8px 0; }
 .payment-card p { margin: 3px 0; font-size: 12px; }
 .payment-card .payment-verification-warning { margin-top: 14px; padding: 11px 12px; background: #fff4dc; color: #6b271d; border-left: 3px solid var(--gold); font-weight: 700; }
+.payment-wallets { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 18px; }
+.payment-wallet { display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 6px 10px; border-radius: 999px; border: 1px solid; font-size: 10px; font-weight: 700; letter-spacing: .04em; background: rgba(255,255,255,.54); }
+.payment-qr { display: grid; justify-items: center; gap: 12px; padding: 14px; margin-top: 4px; border: 1px solid rgba(114, 21, 29, .12); background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(243,236,220,.9)); }
+.payment-qr-loading { animation: paymentPulse .9s ease-in-out infinite alternate; }
+.payment-qr-image { display: block; width: min(100%, 224px); height: auto; object-fit: contain; border-radius: 10px; box-shadow: 0 12px 20px rgba(37, 19, 20, .08); }
+.qr-skeleton { width: 224px; height: 224px; border-radius: 10px; background: linear-gradient(90deg, rgba(214, 201, 175, .7), rgba(255,255,255,.8), rgba(214, 201, 175, .7)); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+.payment-qr-meta { display: grid; justify-items: center; gap: 4px; }
+.payment-qr-meta span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.payment-qr-meta strong { font-size: 15px; letter-spacing: .04em; color: var(--ink); word-break: break-word; text-align: center; }
+.payment-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.payment-actions .button { min-width: 150px; }
+.payment-safety { margin-top: 16px; color: var(--muted); font-size: 11px; line-height: 1.7; }
 .payment-steps { margin: 19px 0 0; padding-left: 18px; color: #545d57; font-size: 11px; line-height: 1.9; }
 .form-card { background: white; border: 1px solid var(--line); padding: clamp(22px, 4vw, 42px); }
+.campus-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; padding: 20px 22px; margin: 0 0 26px; background: linear-gradient(135deg, rgba(255,244,220,.75), rgba(255,255,255,.82)); border: 1px solid rgba(114, 21, 29, .14); border-left: 4px solid var(--maroon); box-shadow: 0 10px 24px rgba(33, 18, 18, .05); }
+.campus-card-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: rgba(114,21,29,.08); color: var(--maroon); }
+.campus-card-label { margin: 0 0 6px; color: var(--muted); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.campus-card h3 { margin: 0 0 6px; font-family: var(--font-display), serif; font-size: clamp(23px, 3vw, 30px); font-weight: 400; }
+.campus-card p { margin: 0; color: var(--muted); line-height: 1.7; font-size: 12px; }
+.github-link { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; color: currentColor; border-radius: 50%; transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease; }
+.github-link:hover { transform: translateY(-2px) scale(1.06); box-shadow: 0 10px 18px rgba(0,0,0,.14); background: rgba(255,255,255,.08); }
+.github-link-admin:hover { background: rgba(255,255,255,.12); }
+.github-link::after { content: "Meet the website developer"; position: absolute; top: -32px; transform: translateY(4px); opacity: 0; white-space: nowrap; font-size: 10px; letter-spacing: .04em; padding: 6px 8px; border-radius: 999px; background: rgba(27,24,19,.9); color: #fff; transition: opacity .2s ease, transform .2s ease; }
+.github-link:hover::after { opacity: 1; transform: translateY(0); }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes paymentPulse {
+  0% { box-shadow: 0 0 0 0 rgba(114, 21, 29, 0.12); }
+  100% { box-shadow: 0 0 0 12px rgba(114, 21, 29, 0.02); }
+}
 .form-section + .form-section { margin-top: 30px; padding-top: 25px; border-top: 1px solid var(--line); }
 .form-section h2 { font-family: var(--font-display), serif; font-size: 26px; font-weight: 400; margin: 0 0 18px; }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
