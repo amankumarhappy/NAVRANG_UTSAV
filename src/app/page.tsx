@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { EventCountdown } from "@/components/home/event-countdown";
 import { PosterArt } from "@/components/ui/poster-art";
 import { eventConfig } from "@/config/event";
 import { posters } from "@/config/posters";
@@ -37,6 +38,7 @@ export default async function HomePage() {
               <Link className="button" href="/register">Register Now <ArrowUpRight size={16} /></Link>
               <Link className="button button-outline" href="/get-pass">Get Your Pass</Link>
             </div>
+            <EventCountdown />
           </div>
           <PosterArt poster={posters.hero} />
         </div>

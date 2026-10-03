@@ -22,8 +22,8 @@ export async function POST(request: Request) {
   if (!Number.isInteger(body.size) || !body.size || body.size < 1 || body.size > eventConfig.payment.maxScreenshotBytes) {
     return NextResponse.json({ error: "The screenshot must be 5MB or smaller." }, { status: 400 });
   }
-  if (!process.env.NEXT_PUBLIC_UPI_ID?.trim()) {
-    return NextResponse.json({ error: "Registration is not open until the official UPI details are configured." }, { status: 409 });
+  if (!process.env.NEXT_PUBLIC_UPI_ID?.trim() || !process.env.NEXT_PUBLIC_UPI_NAME?.trim()) {
+    return NextResponse.json({ error: "Registration is not open until the official UPI ID and name are configured." }, { status: 409 });
   }
   const eventId = process.env.NEXT_PUBLIC_EVENT_ID;
   if (!eventId) return NextResponse.json({ error: "Registration is not configured." }, { status: 503 });

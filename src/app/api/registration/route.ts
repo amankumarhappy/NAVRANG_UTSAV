@@ -25,14 +25,20 @@ export async function POST(request: Request) {
   }
   const eventId = process.env.NEXT_PUBLIC_EVENT_ID;
   if (!eventId) return NextResponse.json({ error: "Registration is not configured. Please contact the event team." }, { status: 503 });
-  const supabase = createServiceSupabaseClient();
+  let supabase: ReturnType<typeof createServiceSupabaseClient>;
+  try {
+    supabase = createServiceSupabaseClient();
+  } catch (error) {
+    console.error("Registration backend is not configured", error);
+    return NextResponse.json({ error: "Registration is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   const removeUnclaimedScreenshot = async () => {
     const { error } = await supabase.storage.from("payment-screenshots").remove([paymentScreenshotPath]);
     if (error) console.error("Could not remove an unclaimed payment screenshot", error.message);
   };
-  if (!process.env.NEXT_PUBLIC_UPI_ID?.trim()) {
+  if (!process.env.NEXT_PUBLIC_UPI_ID?.trim() || !process.env.NEXT_PUBLIC_UPI_NAME?.trim()) {
     await removeUnclaimedScreenshot();
-    return NextResponse.json({ error: "Registration is not open until the official UPI details are configured." }, { status: 409 });
+    return NextResponse.json({ error: "Registration is not open until the official UPI ID and name are configured." }, { status: 409 });
   }
 
   const { data: eventData, error: eventError } = await supabase.rpc("get_active_event", { p_event_id: eventId });
@@ -69,47 +75,53 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Choose a valid PNG, JPG, JPEG or WEBP payment screenshot." }, { status: 400 });
   }
 
-  const publicSupabase = createPublicSupabaseClient();
-  const { data, error } = await publicSupabase.rpc("create_registration", {
-    p_event_id: eventId,
-    p_full_name: parsed.data.fullName,
-    p_roll_number: parsed.data.rollNumber,
-    p_branch: parsed.data.branch,
-    p_batch: parsed.data.batch,
-    p_phone: parsed.data.phone,
-    p_email: parsed.data.email,
-    p_college: parsed.data.college,
-    p_transaction_id: parsed.data.transactionId,
-    p_payment_screenshot_path: paymentScreenshotPath,
-  });
-  if (error) {
-    await removeUnclaimedScreenshot();
-    const message = error.message.toLowerCase();
-    if (message.includes("transaction")) {
-      return NextResponse.json({ error: "This transaction ID has already been used for a registration." }, { status: 409 });
+  try {
+    const publicSupabase = createPublicSupabaseClient();
+    const { data, error } = await publicSupabase.rpc("create_registration", {
+      p_event_id: eventId,
+      p_full_name: parsed.data.fullName,
+      p_roll_number: parsed.data.rollNumber,
+      p_branch: parsed.data.branch,
+      p_batch: parsed.data.batch,
+      p_phone: parsed.data.phone,
+      p_email: parsed.data.email,
+      p_college: parsed.data.college,
+      p_transaction_id: parsed.data.transactionId,
+      p_payment_screenshot_path: paymentScreenshotPath,
+    });
+    if (error) {
+      await removeUnclaimedScreenshot();
+      const message = error.message.toLowerCase();
+      if (message.includes("transaction")) {
+        return NextResponse.json({ error: "This transaction ID has already been used for a registration." }, { status: 409 });
+      }
+      if (message.includes("roll")) {
+        return NextResponse.json({ error: "This roll number is already registered for this event." }, { status: 409 });
+      }
+      if (message.includes("email") || message.includes("phone")) {
+        return NextResponse.json({ error: "These contact details are already registered for this event." }, { status: 409 });
+      }
+      if (message.includes("closed") || message.includes("inactive")) {
+        return NextResponse.json({ error: "Registration for this event is currently closed." }, { status: 409 });
+      }
+      console.error("Secure registration RPC failed", error.message);
+      return NextResponse.json({ error: "We could not complete your registration. Please try again." }, { status: 503 });
     }
-    if (message.includes("roll")) {
-      return NextResponse.json({ error: "This roll number is already registered for this event." }, { status: 409 });
-    }
-    if (message.includes("email") || message.includes("phone")) {
-      return NextResponse.json({ error: "These contact details are already registered for this event." }, { status: 409 });
-    }
-    if (message.includes("closed") || message.includes("inactive")) {
-      return NextResponse.json({ error: "Registration for this event is currently closed." }, { status: 409 });
-    }
-    console.error("Secure registration RPC failed", error.message);
-    return NextResponse.json({ error: "We could not complete your registration. Please try again." }, { status: 503 });
-  }
 
-  const result = Array.isArray(data) ? data[0] : data;
-  const registrationId = typeof result === "string"
-    ? result
-    : result && typeof result === "object" && "registration_id" in result
-      ? String(result.registration_id)
-      : null;
-  if (!registrationId) {
-    console.error("Registration RPC completed without a public registration ID.");
-    return NextResponse.json({ error: "We could not complete your registration. Please contact the event team." }, { status: 502 });
+    const result = Array.isArray(data) ? data[0] : data;
+    const registrationId = typeof result === "string"
+      ? result
+      : result && typeof result === "object" && "registration_id" in result
+        ? String(result.registration_id)
+        : null;
+    if (!registrationId) {
+      console.error("Registration RPC completed without a public registration ID.");
+      return NextResponse.json({ error: "We could not complete your registration. Please contact the event team." }, { status: 502 });
+    }
+    return NextResponse.json({ registrationId }, { status: 201 });
+  } catch (error) {
+    await removeUnclaimedScreenshot();
+    console.error("Secure registration request failed", error);
+    return NextResponse.json({ error: "We could not complete your registration. Please try again shortly." }, { status: 503 });
   }
-  return NextResponse.json({ registrationId }, { status: 201 });
 }

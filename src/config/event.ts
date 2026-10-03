@@ -2,6 +2,7 @@ export const eventConfig = {
   id: process.env.NEXT_PUBLIC_EVENT_ID ?? "",
   title: "NAVRANG 26 — Dandiya Night 2026",
   date: "2026-10-14",
+  startsAt: "2026-10-14T15:00:00+05:30",
   dateLabel: "14 October 2026",
   time: "3:00 PM – 8:00 PM Onwards",
   venue: "GEC Buxar Campus",
