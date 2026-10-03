@@ -4,7 +4,7 @@ import { eventConfig } from "@/config/event";
 
 export default function ActivitiesPage() {
   return <>
-    <section className="page-hero"><div className="container"><span className="eyebrow">The evening</span><h1>Culture in motion.</h1><p>A considered programme of ceremony, performance and Garba. The final running order will be shared once confirmed.</p></div></section>
+    <section className="page-hero"><div className="container"><span className="eyebrow">The evening</span><h1>Culture in motion.</h1><p>A considered programme of ceremony, performance and Garba. Detailed programme timings will be announced soon.</p></div></section>
     <section className="section"><div className="container">
       <div className="activity-list">{eventConfig.activities.map(([title, detail], index) => <article className="activity-row" key={title}><span className="row-number">0{index + 1}</span><h2>{title}</h2><p>{detail}</p></article>)}</div>
       <p className="toast-note space-top">Detailed schedule will be updated soon. Time to be announced for each programme.</p>

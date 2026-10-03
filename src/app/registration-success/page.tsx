@@ -3,8 +3,8 @@ import Image from "next/image";
 import { Check } from "lucide-react";
 import { site } from "@/config/site";
 
-export default function RegistrationSuccessPage({ searchParams }: { searchParams: { id?: string } }) {
-  const { id } = searchParams;
+export default async function RegistrationSuccessPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const { id } = await searchParams;
   return <div className="container">
     <section className="success-box">
       <Image src={site.logoPath} alt="Government Engineering College, Buxar" width={64} height={64} style={{ objectFit: "contain", marginBottom: 18 }} />

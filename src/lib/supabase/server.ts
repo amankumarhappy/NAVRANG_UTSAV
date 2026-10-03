@@ -12,7 +12,7 @@ function requiredEnv(name: string) {
 }
 
 export async function createSupabaseServerClient() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   return createServerClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??

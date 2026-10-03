@@ -3,7 +3,8 @@ import { requireAdmin } from "@/lib/supabase/server";
 
 const actions = new Set(["APPROVE", "REJECT", "MANUAL_APPROVE", "REISSUE"]);
 
-export async function POST(request: Request, { params }: { params: { registrationId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ registrationId: string }> }) {
+  const { registrationId } = await params;
   const auth = await requireAdmin();
   if (!auth.authorized || !auth.user) return NextResponse.json({ error: "Not authorised." }, { status: auth.user ? 403 : 401 });
   let body: { action?: string; reason?: string };
@@ -23,7 +24,7 @@ export async function POST(request: Request, { params }: { params: { registratio
 
   const { data, error } = await auth.supabase.rpc("admin_registration_action", {
     p_event_id: eventId,
-    p_registration_id: params.registrationId,
+    p_registration_id: registrationId,
     p_action: action,
     p_reason: reason || null,
   });

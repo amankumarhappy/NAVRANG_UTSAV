@@ -1,10 +1,10 @@
 export const eventConfig = {
   id: process.env.NEXT_PUBLIC_EVENT_ID ?? "",
-  title: "NAVRANG 26 — Dandiya Night 2026",
+  title: "NAVRANG ’26 — Dandiya Night 2026",
   date: "2026-10-14",
   startsAt: "2026-10-14T15:00:00+05:30",
   dateLabel: "14 October 2026",
-  time: "3:00 PM – 8:00 PM Onwards",
+  time: "3:00 PM – 8:00 PM",
   venue: "GEC Buxar Campus",
   defaultFee: 200,
   eligibleBatches: ["2023", "2024", "2025", "2026"],
@@ -18,14 +18,11 @@ export const eventConfig = {
     acceptedExtensions: [".png", ".jpg", ".jpeg", ".webp"],
   },
   highlights: [
-    ["Inauguration Ceremony", "A grand opening to the festive evening."],
-    ["Special Cultural Act", "Durga Act & Vandana by the cultural team."],
-    ["Dance & Garba", "Group Garba formations and Solo Dance performances."],
-    [
-      "Festive Music Policy",
-      "Decent, festive songs managed by the student music committee. No vulgar or inappropriate tracks.",
-    ],
-    ["On-site facility", "Clean drinking water points across the venue."],
+    ["Inauguration Ceremony", "A graceful opening ceremony to begin the evening of celebration."],
+    ["Special Cultural Presentation", "A soulful Durga Vandana followed by a special cultural performance by the college team."],
+    ["Garba & Dance Performances", "Experience vibrant Garba formations, traditional dances and energetic student performances."],
+    ["Music & Celebration", "Enjoy an evening of festive music, Garba beats and joyful celebrations curated for the Navrang ’26 experience."],
+    ["Guest & Student Amenities", "Drinking water and essential on-site facilities will be available throughout the venue for the convenience of attendees."],
   ],
   flow: [
     "Grand Inauguration",
@@ -44,9 +41,17 @@ export const eventConfig = {
     ["Campus Celebration", "An evening shaped by student participation, culture and community."],
   ],
   entryRules: [
-    ["Mandatory ID check", "Entry is allowed only with a valid College ID Card. A Library Card may be accepted for students without a College ID."],
-    ["Access control", "Entry is restricted to registered participants from eligible batches."],
-    ["Campus decorum", "Please maintain discipline. Misconduct may be reported to the discipline committee."],
+    ["Mandatory College ID", "Entry will be permitted only after verification of a valid College ID Card. Students without a College ID may carry their Library Card as an alternative identification document."],
+    ["Registered Participants Only", "Entry is restricted to registered and eligible participants. Please do not attempt to enter the event using another student’s registration or credentials."],
+    ["Maintain Campus Discipline", "All students are expected to maintain proper discipline and decorum throughout the event. Please follow the instructions of the organising team, volunteers and college authorities."],
+    ["Respectful Conduct", "Misbehaviour, arguments, harassment, abusive language or any inappropriate conduct will not be tolerated."],
+    ["Respect the Campus", "Please respect the college premises and event arrangements. Do not damage, move or misuse campus property, decorations, equipment or event facilities."],
+    ["Follow Event Instructions", "Follow instructions regarding entry, movement, crowd management, performance areas and restricted zones. Do not enter backstage or restricted areas without permission."],
+    ["Responsible Celebration", "Celebrate responsibly, keep the venue clean and use designated waste bins. Do not cause inconvenience or safety concerns for others."],
+    ["Safety & Cooperation", "For assistance, contact an event volunteer, organising team member or college authority rather than creating a disturbance."],
+    ["Collective Responsibility", "The success of NAVRANG ’26 depends on everyone’s cooperation and responsible participation. Celebrate with enthusiasm while preserving the dignity of our college."],
+    ["Traditional Dress Code", "Traditional attire is requested for both boys and girls."],
+    ["Bring Your Dandiya Sticks", "Please bring your own Dandiya sticks for the celebration."],
   ],
 } as const;
 

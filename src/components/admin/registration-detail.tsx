@@ -13,9 +13,17 @@ type Registration = {
   qr_token?: string; created_at: string; updated_at: string;
 };
 
+async function fetchRegistration(registrationId: string): Promise<Registration> {
+  const response = await fetch(`/api/admin/registrations/${encodeURIComponent(registrationId)}`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error ?? "Registration details could not be loaded.");
+  return data.registration;
+}
+
 export function RegistrationDetail({ registrationId }: { registrationId: string }) {
   const [registration, setRegistration] = useState<Registration | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadedRegistrationId, setLoadedRegistrationId] = useState<string | null>(null);
+  const loading = loadedRegistrationId !== registrationId;
   const [action, setAction] = useState("");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,20 +32,29 @@ export function RegistrationDetail({ registrationId }: { registrationId: string 
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
     try {
-      const response = await fetch(`/api/admin/registrations/${encodeURIComponent(registrationId)}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Registration details could not be loaded.");
-      setRegistration(data.registration);
+      setRegistration(await fetchRegistration(registrationId));
       setError("");
     } catch (reasonError) {
       setError(reasonError instanceof Error ? reasonError.message : "Registration details could not be loaded.");
-    } finally {
-      setLoading(false);
     }
   }, [registrationId]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    fetchRegistration(registrationId)
+      .then((data) => {
+        if (!active) return;
+        setRegistration(data);
+        setError("");
+        setLoadedRegistrationId(registrationId);
+      })
+      .catch((reasonError: unknown) => {
+        if (!active) return;
+        setError(reasonError instanceof Error ? reasonError.message : "Registration details could not be loaded.");
+        setLoadedRegistrationId(registrationId);
+      });
+    return () => { active = false; };
+  }, [registrationId]);
 
   const perform = async () => {
     if (!action || busy) return;

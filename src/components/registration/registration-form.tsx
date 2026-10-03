@@ -28,7 +28,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
 
   const submit = async (values: RegistrationInput) => {
     if (!acknowledged) {
-      setAcknowledgementError("Confirm that you understand payment verification is still required.");
+      setAcknowledgementError("Please acknowledge that payment verification is required.");
       return;
     }
     if (!file) {
@@ -36,7 +36,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
       return;
     }
     if (!eventActive) {
-      toast.error("Registration is unavailable until event details can be verified.");
+      toast.error("Registration is not available right now. Please try again shortly.");
       return;
     }
     setBusy(true);
@@ -125,7 +125,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
           </div>
           <span className="field-error" role="alert">{fileError}</span>
         </div>
-        <label className="checkline"><input type="checkbox" checked={acknowledged} onChange={(event) => { setAcknowledged(event.target.checked); setAcknowledgementError(""); }} aria-describedby="verification-ack-error" /> <span>I understand this registration remains <strong>pending verification</strong> until an authorised admin verifies the payment. Submission does not confirm my entry.</span></label>
+        <label className="checkline"><input type="checkbox" checked={acknowledged} onChange={(event) => { setAcknowledged(event.target.checked); setAcknowledgementError(""); }} aria-describedby="verification-ack-error" /> <span>I understand that my payment must be verified by an authorised admin before an entry pass is issued.</span></label>
         <span className="field-error" id="verification-ack-error" role="alert">{acknowledgementError}</span>
       </section>
       <button className="button form-submit" type="submit" disabled={busy || !eventActive} aria-busy={busy}>

@@ -20,19 +20,20 @@ type PassDetails = {
   venue?: string | null;
 };
 
+type QRState = { token: string; value: string } | { token: string; error: true };
+
 export function PassCard({ pass }: { pass: PassDetails }) {
-  const [qr, setQr] = useState<string | null>(null);
-  const [qrError, setQrError] = useState(false);
+  const [qrState, setQrState] = useState<QRState | null>(null);
+  const qr = qrState?.token === pass.qrToken && "value" in qrState ? qrState.value : null;
+  const qrError = qrState?.token === pass.qrToken && "error" in qrState;
   const eventDateLabel = pass.eventDate
     ? new Date(`${pass.eventDate.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : site.eventDateLabel;
   useEffect(() => {
     let active = true;
-    setQr(null);
-    setQrError(false);
     QRCode.toDataURL(pass.qrToken, { width: 320, margin: 1, color: { dark: "#202522", light: "#ffffff" } })
-      .then((value) => { if (active) setQr(value); })
-      .catch(() => { if (active) setQrError(true); });
+      .then((value) => { if (active) setQrState({ token: pass.qrToken, value }); })
+      .catch(() => { if (active) setQrState({ token: pass.qrToken, error: true }); });
     return () => { active = false; };
   }, [pass.qrToken]);
   return <section className="lookup-result">

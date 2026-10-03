@@ -5,9 +5,10 @@ import { requireAdmin } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminRegistrationDetailsPage({ params }: { params: { registrationId: string } }) {
+export default async function AdminRegistrationDetailsPage({ params }: { params: Promise<{ registrationId: string }> }) {
+  const { registrationId } = await params;
   const auth = await requireAdmin();
   if (!auth.user) redirect("/admin/login?next=%2Fadmin%2Fregistrations");
   if (!auth.authorized) redirect("/403");
-  return <div className="admin-shell"><AdminHeader /><div className="container"><RegistrationDetail registrationId={params.registrationId} /></div></div>;
+  return <div className="admin-shell"><AdminHeader /><div className="container"><RegistrationDetail registrationId={registrationId} /></div></div>;
 }

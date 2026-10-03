@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAdmin, createServiceSupabaseClient } from "@/lib/supabase/server";
 
-export async function GET(_: Request, { params }: { params: { registrationId: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ registrationId: string }> }) {
+  const { registrationId } = await params;
   const auth = await requireAdmin();
   if (!auth.authorized) return NextResponse.json({ error: "Not authorised." }, { status: auth.user ? 403 : 401 });
   const supabase = createServiceSupabaseClient();
   const { data, error } = await supabase.from("registrations")
     .select("id,registration_id,event_id,full_name,roll_number,branch,batch,phone,email,college,transaction_id,amount_paid,payment_screenshot_path,status,pass_generated,qr_token,created_at,updated_at")
-    .eq("registration_id", params.registrationId)
+    .eq("registration_id", registrationId)
     .eq("event_id", process.env.NEXT_PUBLIC_EVENT_ID ?? "")
     .maybeSingle();
   if (error) {

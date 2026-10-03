@@ -7,7 +7,7 @@ export const faqs = [
   ["How do I pay?", "Pay ₹200 through the official UPI details shown on the registration page, then save your transaction/UTR number and screenshot."],
   ["Why do I need a transaction ID?", "It helps the event team identify and manually verify your payment."],
   ["Why do I need to upload a payment screenshot?", "The screenshot supports manual payment verification. Make sure the transaction/UTR number is clearly visible."],
-  ["When will my registration be confirmed?", "After an authorized admin verifies your payment. Until then, your registration is pending verification."],
+  ["When will my entry pass be issued?", "Your entry pass is issued after an authorized admin verifies your payment."],
   ["How do I get my entry pass?", "Use Get Your Pass with your registration ID and the email or phone number used to register. The pass becomes available after approval."],
   ["What if I do not receive the email?", "You can retrieve an approved pass from the website using Get Your Pass."],
   ["What should I bring to the gate?", "Bring your valid College ID Card or Library Card and your entry pass."],

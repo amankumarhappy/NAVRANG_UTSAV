@@ -28,23 +28,23 @@ export default async function HomePage() {
         <div className="container hero-grid">
           <div className="hero-copy">
             <div className="hero-kicker"><span /> GOVERNMENT ENGINEERING COLLEGE, BUXAR</div>
-            <h1 className="hero-title">{activeEvent?.name ?? site.name}<span>{site.title.toUpperCase()}</span></h1>
-            <p className="hero-note">{activeEvent?.description || site.tagline}</p>
+            <h1 className="hero-title">{site.name}<span>{site.title.toUpperCase()}</span></h1>
+            <p className="hero-note">{site.tagline}</p>
             <div className="hero-meta">
               <span>{dateLabel}</span><span className="meta-divider" /><span>{site.time}</span>
               <span className="meta-divider" /><span>{site.venue}</span>
             </div>
+            <EventCountdown />
             <div className="hero-actions">
               <Link className="button" href="/register">Register Now <ArrowUpRight size={16} /></Link>
               <Link className="button button-outline" href="/get-pass">Get Your Pass</Link>
             </div>
-            <EventCountdown />
           </div>
           <PosterArt poster={posters.hero} />
         </div>
       </section>
       <div className="intro-strip"><div className="container intro-strip-inner">
-        <p>An evening of rhythm, colour and campus spirit.</p><span>Tradition, together at GEC Buxar</span>
+        <p>An evening of rhythm, colour and campus spirit.</p><span>Organised by the 2024 Batch</span>
       </div></div>
 
       <section className="section" id="event">
@@ -60,7 +60,7 @@ export default async function HomePage() {
             <div className="fact"><div className="fact-label">Time</div><div className="fact-value">{site.time}</div></div>
             <div className="fact"><div className="fact-label">Venue</div><div className="fact-value">{site.venue}</div></div>
             <div className="fact"><div className="fact-label">Eligibility</div><div className="fact-value">B.Tech · 2023—2026</div><div className="fact-sub">Eligible batches</div></div>
-            <div className="fact"><div className="fact-label">Registration</div><div className="fact-value">{formatRupees(registrationFee)} / student</div><div className="fact-sub">{activeEvent ? "Fee confirmed by the active event record" : "Configured guide price · confirmation pending"}</div></div>
+            <div className="fact"><div className="fact-label">Registration</div><div className="fact-value">{formatRupees(registrationFee)} / head</div><div className="fact-sub">Per attendee</div></div>
           </div>
         </div>
       </section>
@@ -69,14 +69,14 @@ export default async function HomePage() {
         <div className="container">
           <div className="section-heading">
             <span className="eyebrow">What to look forward to</span>
-            <h2>Rooted in culture.<br />Made for the campus.</h2>
+            <h2>NAVRANG ’26 — Event Highlights</h2>
           </div>
           <div className="highlight-grid">
             {eventConfig.highlights.map(([title, description], index) => (
               <article className="highlight" key={title}><span className="highlight-number">0{index + 1}</span><h3>{title}</h3><p>{description}</p></article>
             ))}
           </div>
-          <p className="toast-note space-top">Detailed schedule will be updated soon. No performance timings have been announced.</p>
+          <p className="toast-note space-top">Detailed programme schedule and performance timings will be announced soon.</p>
           <div className="space-top"><Link className="text-link" href="/activities">Explore the evening <span>→</span></Link></div>
         </div>
       </section>
@@ -92,11 +92,11 @@ export default async function HomePage() {
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <div className="section-heading"><span className="eyebrow">Entry & discipline</span><h2>A celebration,<br />with care.</h2><p>Help us make the evening welcoming and comfortable for everyone. Entry is subject to registration checks and campus rules.</p></div>
+          <div className="section-heading"><span className="eyebrow">ENTRY &amp; DISCIPLINE</span><h2>A celebration made successful by everyone.</h2><p>Help us make NAVRANG ’26 a safe, respectful and memorable celebration for everyone. All attendees are requested to follow the event guidelines, maintain campus discipline and cooperate with the organising team and college authorities.</p></div>
           <div className="rule-grid">
             {eventConfig.entryRules.map(([title, description]) => <article className="rule" key={title}><h3>{title}</h3><p>{description}</p></article>)}
           </div>
-          <p className="toast-note space-top">Clean drinking water points will be provided across the venue. Please contact the event team for accessibility or first-aid information.</p>
+          <p className="toast-note space-top"><strong>Essential Facilities:</strong> Clean drinking water will be available at designated points across the venue. For accessibility, first-aid or other assistance, please approach the event help desk or organising team.</p>
         </div>
       </section>
       <section className="cta-band"><div className="container cta-band-inner"><div><h2>Meet us on the dance floor.</h2><p>Save your registration ID after submitting. Passes become available once payment is verified.</p></div><Link className="button button-light" href="/register">Start registration <ArrowUpRight size={16} /></Link></div></section>
