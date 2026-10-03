@@ -27,10 +27,10 @@ Copy `.env.example` to `.env.local` and fill in values from the project owner:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable/anon key; prefer this name |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Legacy anon-key fallback |
 | `SUPABASE_SECRET_KEY` | Server-only Supabase secret key for private uploads, admin reads and signed screenshot URLs; `SUPABASE_SERVICE_ROLE_KEY` remains supported as a legacy fallback |
-| `NEXT_PUBLIC_EVENT_ID` | Event record UUID; defaults to the supplied NAVRANG 26 ID |
+| `NEXT_PUBLIC_EVENT_ID` | UUID of the confirmed NAVRANG 26 event record in Supabase |
 | `NEXT_PUBLIC_COLLEGE_LOGO_URL` | Official logo source; the downloaded local logo is used by the UI |
-| `NEXT_PUBLIC_UPI_ID` | Official payment UPI ID used by the registration flow |
-| `NEXT_PUBLIC_UPI_NAME` | Public merchant display name |
+| `NEXT_PUBLIC_UPI_ID` | Confirmed official payment UPI ID used by the registration flow |
+| `NEXT_PUBLIC_UPI_NAME` | Confirmed public merchant name shown before payment |
 | `MAKE_WEBHOOK_URL` | Optional Make custom webhook URL; server/Edge Function only |
 | `MAKE_WEBHOOK_SECRET` | Optional Make bearer secret; never expose to a browser |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for pass-recovery links |
@@ -80,7 +80,7 @@ The official GEC logo is stored at `public/assets/gec-buxar-logo.png` and refere
 
 ### Payment
 
-Set `NEXT_PUBLIC_UPI_ID` only after the official merchant ID has been confirmed. Update the display name in `.env.local` and `src/config/site.ts` only if the verified merchant name changes. A blank UPI ID blocks screenshot upload and registration submission.
+Set both `NEXT_PUBLIC_UPI_ID` and `NEXT_PUBLIC_UPI_NAME` only after the official merchant details have been confirmed. The example environment leaves both blank intentionally; the registration page and server APIs block payment and submission until both are configured. Students are prompted to verify the displayed UPI name before paying.
 
 ## Admin authentication and permissions
 

@@ -20,6 +20,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
   const [acknowledged, setAcknowledged] = useState(false);
   const [acknowledgementError, setAcknowledgementError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const { register, handleSubmit, formState: { errors } } = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
     defaultValues: { college: eventConfig.defaultCollege },
@@ -39,6 +40,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
       return;
     }
     setBusy(true);
+    setLoadingMessage("Preparing secure upload…");
     setFileError("");
     try {
       const uploadResponse = await fetch("/api/registration/upload-url", {
@@ -49,12 +51,14 @@ export function RegistrationForm({ fee, eventActive }: Props) {
       const upload = await uploadResponse.json();
       if (!uploadResponse.ok) throw new Error(upload.error ?? "Payment screenshot could not be uploaded. Please try again.");
 
+      setLoadingMessage("Uploading payment screenshot…");
       const supabase = createSupabaseBrowserClient();
       const { error: uploadError } = await supabase.storage
         .from("payment-screenshots")
         .uploadToSignedUrl(upload.path, upload.token, file, { contentType: file.type, upsert: false });
       if (uploadError) throw new Error("Payment screenshot could not be uploaded. Please try again.");
 
+      setLoadingMessage("Submitting registration…");
       const response = await fetch("/api/registration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,6 +72,7 @@ export function RegistrationForm({ fee, eventActive }: Props) {
       toast.error(error instanceof Error ? error.message : "We could not complete your registration. Please try again.");
     } finally {
       setBusy(false);
+      setLoadingMessage("");
     }
   };
 
@@ -124,8 +129,10 @@ export function RegistrationForm({ fee, eventActive }: Props) {
         <span className="field-error" id="verification-ack-error" role="alert">{acknowledgementError}</span>
       </section>
       <button className="button form-submit" type="submit" disabled={busy || !eventActive} aria-busy={busy}>
-        {busy ? "Submitting securely…" : `Submit registration · ${formatRupees(fee)}`}
+        {busy && <span className="loading-spinner" aria-hidden="true" />}
+        <span>{busy ? loadingMessage : `Submit registration · ${formatRupees(fee)}`}</span>
       </button>
+      <span className="sr-only" role="status" aria-live="polite">{loadingMessage}</span>
       <p className="toast-note center space-top">Your payment screenshot stays in private storage and is reviewed only by authorised event admins.</p>
     </form>
   );

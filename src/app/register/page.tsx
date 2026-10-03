@@ -5,17 +5,31 @@ import { RegistrationForm } from "@/components/registration/registration-form";
 import { eventConfig } from "@/config/event";
 import { posters } from "@/config/posters";
 import { site } from "@/config/site";
-import { getActiveEvent } from "@/lib/supabase/event";
+import { getActiveEventResult } from "@/lib/supabase/event";
 import { formatRupees } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
-  const event = await getActiveEvent();
+  const { event, status } = await getActiveEventResult();
   const hasConfirmedFee = event?.registration_fee !== undefined && event.registration_fee !== null;
   const fee = event?.registration_fee ?? eventConfig.defaultFee;
-  const active = !!event?.is_active && hasConfirmedFee && !!site.upi.id.trim();
-  const paymentUri = site.upi.id.trim()
+  const hasOfficialUpi = !!site.upi.id.trim() && !!site.upi.name.trim();
+  const active = status === "ready" && hasConfirmedFee && hasOfficialUpi;
+  const unavailableMessage = status === "unconfigured"
+    ? "Registration setup is being completed. Please check back shortly."
+    : status === "unavailable"
+      ? "We’re temporarily unable to load registration details. Please try again shortly."
+      : status === "not-found"
+        ? "Registration details are not available yet. Please check back shortly."
+        : status === "closed"
+          ? "Registration for this event is currently closed."
+          : !hasConfirmedFee
+            ? "Registration is temporarily unavailable because the event fee has not been confirmed."
+            : !hasOfficialUpi
+              ? "Registration will open once the official UPI ID and name are confirmed."
+              : null;
+  const paymentUri = site.upi.id.trim() && site.upi.name.trim()
     ? `upi://pay?${new URLSearchParams({ pa: site.upi.id, pn: site.upi.name, cu: "INR" })}`
     : "";
   const paymentQr = paymentUri
@@ -41,8 +55,9 @@ export default async function RegisterPage() {
           <div className="payment-fee">{formatRupees(fee)}</div>
           <p>{hasConfirmedFee ? "per student · confirmed by the event record" : "configured guide price · awaiting event confirmation"}</p>
           {!hasConfirmedFee && <p className="fee-note">The server uses the fee saved in Supabase. Confirm the active event before paying.</p>}
-          <p style={{ marginTop: 16 }}><strong>Official UPI name</strong>{site.upi.name}</p>
+          <p style={{ marginTop: 16 }}><strong>Official UPI name</strong>{site.upi.name || "Not yet confirmed — do not pay until the official UPI name is published."}</p>
           <p><strong>UPI ID</strong>{site.upi.id || "Not yet configured — do not pay until the official UPI ID is published."}</p>
+          <p className="payment-verification-warning" role="note">Verify the UPI name before making payment.</p>
           {paymentQr && <div className="payment-qr">
             <Image src={paymentQr} alt={`UPI payment QR for ${site.upi.id}`} width={224} height={224} unoptimized />
             <span>Scan with any UPI app</span>
@@ -53,7 +68,7 @@ export default async function RegisterPage() {
         <p className="toast-note">Payment does not immediately confirm registration. Your status stays pending until reviewed.</p>
       </aside>
       <div>
-        {!active && <p className="form-locked" role="status">{site.upi.id.trim() ? "Registration is currently unavailable because the active event could not be verified or is closed. Please try again later." : "Registration will open once the official UPI ID is confirmed and added to the site configuration."}</p>}
+        {unavailableMessage && <p className="form-locked" role="status">{unavailableMessage}</p>}
         <RegistrationForm fee={fee} eventActive={active} />
       </div>
     </div></section>

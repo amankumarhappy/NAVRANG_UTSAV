@@ -23,8 +23,6 @@ export const site = {
   },
   upi: {
     id: process.env.NEXT_PUBLIC_UPI_ID ?? "",
-    name:
-      process.env.NEXT_PUBLIC_UPI_NAME ??
-      "GEC BUXAR DANDIYA 2026 / GEC BUXAR CULTURAL CLUB",
+    name: process.env.NEXT_PUBLIC_UPI_NAME ?? "",
   },
 } as const;
