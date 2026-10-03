@@ -10,7 +10,13 @@ const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89
 const isNetworkFailure = (message: string) => /fetch failed|network|enotfound|econnrefused|etimedout/i.test(message);
 
 function logActiveEventFailure(reason: Exclude<ActiveEventReason, null>, eventId: string, detail?: string) {
-  console.error(`Unable to fetch active event: reason=${reason} eventId=${eventId || "not-configured"}${detail ? ` detail=${detail}` : ""}`);
+  const message = `Active event unavailable; serving configured public event details. reason=${reason} eventId=${eventId || "not-configured"}${detail ? ` detail=${detail}` : ""}`;
+  if (reason === "network") {
+    // The homepage has a configuration fallback, so a transient external outage is not a server exception.
+    console.warn(message);
+    return;
+  }
+  console.error(message);
 }
 
 export async function getActiveEventResult(): Promise<ActiveEventResult> {
