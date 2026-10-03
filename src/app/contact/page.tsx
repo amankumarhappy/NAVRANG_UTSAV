@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Instagram, Linkedin, Phone } from "lucide-react";
+import { coordinators } from "@/config/coordinators";
 import { site } from "@/config/site";
 
 export default function ContactPage() {
@@ -14,6 +15,27 @@ export default function ContactPage() {
   return <>
     <section className="page-hero"><div className="container"><span className="eyebrow">Get in touch</span><h1>We’re here to help.</h1><p>For questions about registration, payment verification or entry, please use the official event contact details once they are published.</p></div></section>
     <section className="section"><div className="container">
+      <div className="space-bottom" style={{ marginBottom: 22 }}>
+        <h2 className="display" style={{ fontSize: "clamp(30px,5vw,44px)", marginBottom: 12 }}>Coordinators</h2>
+        <div className="coordinator-slots" style={{ marginTop: 12 }}>
+          {coordinators.slots.map((slot) => (
+            <section className="coordinator-slot" key={slot.name} aria-label={slot.name}>
+              <h3>{slot.name}</h3>
+              <ol className="coordinator-list">
+                {slot.people.map((person) => (
+                  <li key={`${slot.name}-${person.phone}`}><span>{person.name}</span><a href={`tel:+91${person.phone}`}>+91 {person.phone}</a></li>
+                ))}
+              </ol>
+            </section>
+          ))}
+        </div>
+        <section className="faculty-list" aria-label="Faculty coordinators" style={{ marginTop: 28 }}>
+          <h3>Faculty coordinators</h3>
+          <div>
+            {coordinators.faculty.map((name) => <p key={name}><span>{name}</span><small>To be finalised</small></p>)}
+          </div>
+        </section>
+      </div>
       {contacts.length ? <div className="rule-grid">{contacts.map(({ label, value, href, Icon }) => <article className="rule" key={label}>{Icon && <Icon size={19} aria-hidden="true" />}<h3>{label}</h3><Link className="text-link" href={href}>{value} <span>↗</span></Link></article>)}</div> : <div className="form-locked" style={{ maxWidth: 650 }}>Official contact information has not been confirmed yet. Please check back before publication; no unverified phone numbers or social links are listed here.</div>}
       <div className="space-top"><Link className="text-link" href="/faq">See frequently asked questions <span>→</span></Link></div>
     </div></section>

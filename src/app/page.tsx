@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { EventCountdown } from "@/components/home/event-countdown";
 import { PosterArt } from "@/components/ui/poster-art";
+import { coordinators } from "@/config/coordinators";
 import { eventConfig } from "@/config/event";
 import { posters } from "@/config/posters";
 import { site } from "@/config/site";
@@ -98,6 +99,30 @@ export default async function HomePage() {
           </div>
           <p className="toast-note space-top">Your cooperation makes the celebration successful.<br />Celebrate with joy. Maintain discipline. Respect the campus.</p>
           <p className="toast-note space-top"><strong>Essential Facilities:</strong> Clean drinking water will be available at designated points across the venue. For accessibility, first-aid or other assistance, please approach the event help desk or organising team.</p>
+        </div>
+      </section>
+      <section className="section" style={{ background: "#eeede3" }}>
+        <div className="container">
+          <span className="eyebrow">Event team</span>
+          <h2 className="display" style={{ fontSize: "clamp(32px,5vw,52px)", margin: "15px 0" }}>Coordinators</h2>
+          <div className="coordinator-slots">
+            {coordinators.slots.map((slot) => (
+              <section className="coordinator-slot" key={slot.name} aria-label={slot.name}>
+                <h3>{slot.name}</h3>
+                <ol className="coordinator-list">
+                  {slot.people.map((person) => (
+                    <li key={`${slot.name}-${person.phone}`}><span>{person.name}</span><a href={`tel:+91${person.phone}`}>+91 {person.phone}</a></li>
+                  ))}
+                </ol>
+              </section>
+            ))}
+          </div>
+          <section className="faculty-list" aria-label="Faculty coordinators" style={{ marginTop: 28 }}>
+            <h3>Faculty coordinators</h3>
+            <div>
+              {coordinators.faculty.map((name) => <p key={name}><span>{name}</span><small>To be finalised</small></p>)}
+            </div>
+          </section>
         </div>
       </section>
       <section className="cta-band"><div className="container cta-band-inner"><div><h2>Meet us on the dance floor.</h2><p>Save your registration ID after submitting. Passes become available once payment is verified.</p></div><Link className="button button-light" href="/register">Start registration <ArrowUpRight size={16} /></Link></div></section>

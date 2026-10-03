@@ -1,5 +1,6 @@
 "use client";
 
+import { Github } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,6 +27,9 @@ export function Footer() {
         <nav className="footer-links" aria-label="Footer navigation">
           {links.map(([label, href]) => <Link href={href} key={href}>{label}</Link>)}
           <Link className="admin-link" href="/admin/login">Admin access</Link>
+          <a href="https://github.com/amankumarhappy/NAVRANG_UTSAV" target="_blank" rel="noreferrer" aria-label="NAVRANG repo on GitHub" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, color: "currentColor", opacity: 0.9 }}>
+            <Github size={16} aria-hidden="true" />
+          </a>
         </nav>
       </div>
       <div className="container footer-bottom"><span>© {site.year} NAVRANG · Government Engineering College, Buxar</span><span>Made for our campus, with care.</span></div>
