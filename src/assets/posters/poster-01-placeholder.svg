@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 920">
+  <rect width="720" height="920" fill="#63857e"/>
+  <path d="M360 76 412 240 584 188 468 314 620 398 446 408 472 586 360 450 248 586 274 408 100 398 252 314 136 188 308 240Z" fill="none" stroke="#f2eccd" stroke-width="2" opacity=".72"/>
+  <circle cx="360" cy="390" r="192" fill="none" stroke="#f2eccd" stroke-width="1" opacity=".55"/>
+  <circle cx="360" cy="390" r="158" fill="none" stroke="#f2eccd" stroke-width="1" opacity=".35"/>
+  <text x="360" y="378" text-anchor="middle" fill="#f2eccd" font-family="Georgia,serif" font-size="82">NAVRANG</text>
+  <text x="360" y="456" text-anchor="middle" fill="#f2eccd" font-family="Arial,sans-serif" font-size="28" letter-spacing="10">DANDIYA NIGHT 2026</text>
+  <path d="M80 742h560" stroke="#f2eccd" opacity=".65"/>
+  <text x="360" y="802" text-anchor="middle" fill="#f2eccd" font-family="Arial,sans-serif" font-size="23" letter-spacing="5">14 OCTOBER · GEC BUXAR</text>
+  <text x="360" y="855" text-anchor="middle" fill="#f2eccd" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">OFFICIAL POSTER TO BE ANNOUNCED</text>
+</svg>

@@ -1,0 +1,18 @@
+export const faqs = [
+  ["What is NAVRANG 26?", "NAVRANG 26 is a student-oriented cultural celebration at Government Engineering College, Buxar."],
+  ["When is the event?", "The current event date is shown in the event overview on the home page."],
+  ["Where is the event?", "The event takes place at GEC Buxar Campus."],
+  ["Who can register?", "B.Tech students from the 2023, 2024, 2025 and 2026 batches."],
+  ["What is the registration fee?", "The active registration fee is shown on the registration page and is read from the event record."],
+  ["How do I pay?", "Pay ₹200 through the official UPI details shown on the registration page, then save your transaction/UTR number and screenshot."],
+  ["Why do I need a transaction ID?", "It helps the event team identify and manually verify your payment."],
+  ["Why do I need to upload a payment screenshot?", "The screenshot supports manual payment verification. Make sure the transaction/UTR number is clearly visible."],
+  ["When will my registration be confirmed?", "After an authorized admin verifies your payment. Until then, your registration is pending verification."],
+  ["How do I get my entry pass?", "Use Get Your Pass with your registration ID and the email or phone number used to register. The pass becomes available after approval."],
+  ["What if I do not receive the email?", "You can retrieve an approved pass from the website using Get Your Pass."],
+  ["What should I bring to the gate?", "Bring your valid College ID Card or Library Card and your entry pass."],
+  ["What ID is accepted?", "A valid College ID Card is required. A Library Card may be accepted for students without a College ID."],
+  ["What if my QR doesn't work?", "Show your registration ID and entry pass to the event gate team for assistance."],
+  ["Can I register twice?", "No. Registration details are checked for duplicates for this event."],
+  ["What happens after check-in?", "The QR pass is marked as checked in. Please follow the event team's directions inside the venue."],
+] as const;

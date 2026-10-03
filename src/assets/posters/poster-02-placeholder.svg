@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 920">
+  <rect width="720" height="920" fill="#f2eccd"/>
+  <circle cx="360" cy="380" r="206" fill="#63857e"/>
+  <circle cx="360" cy="380" r="174" fill="none" stroke="#f2eccd" stroke-width="2"/>
+  <path d="M360 170 397 291 525 280 430 365 486 481 372 423 284 518 301 389 175 355 301 320Z" fill="none" stroke="#f2eccd" stroke-width="3"/>
+  <text x="360" y="658" text-anchor="middle" fill="#202522" font-family="Georgia,serif" font-size="48">CULTURE IN MOTION</text>
+  <text x="360" y="716" text-anchor="middle" fill="#63857e" font-family="Arial,sans-serif" font-size="18" letter-spacing="5">ACTIVITIES POSTER · PLACEHOLDER</text>
+</svg>

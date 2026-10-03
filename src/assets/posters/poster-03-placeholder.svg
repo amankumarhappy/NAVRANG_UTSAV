@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 920">
+  <rect width="720" height="920" fill="#743f43"/>
+  <path d="M360 100v430M145 315h430M208 163l304 304M512 163 208 467" stroke="#f2eccd" stroke-width="2" opacity=".58"/>
+  <circle cx="360" cy="315" r="150" fill="none" stroke="#f2eccd" stroke-width="2"/>
+  <circle cx="360" cy="315" r="114" fill="none" stroke="#f2eccd" stroke-width="2"/>
+  <text x="360" y="615" text-anchor="middle" fill="#f2eccd" font-family="Georgia,serif" font-size="51">JOIN THE CIRCLE</text>
+  <text x="360" y="680" text-anchor="middle" fill="#f2eccd" font-family="Arial,sans-serif" font-size="20" letter-spacing="5">REGISTRATION · PLACEHOLDER</text>
+  <text x="360" y="812" text-anchor="middle" fill="#f2eccd" font-family="Arial,sans-serif" font-size="22">₹200 / STUDENT</text>
+</svg>

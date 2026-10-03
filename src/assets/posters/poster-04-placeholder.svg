@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 920">
+  <rect width="720" height="920" fill="#e6e3d1"/>
+  <path d="M106 140h508M106 780h508" stroke="#63857e" stroke-width="2"/>
+  <path d="M160 200v520M560 200v520" stroke="#63857e" stroke-width="1" opacity=".5"/>
+  <circle cx="160" cy="260" r="13" fill="#743f43"/><circle cx="160" cy="390" r="13" fill="#743f43"/><circle cx="160" cy="520" r="13" fill="#743f43"/><circle cx="160" cy="650" r="13" fill="#743f43"/>
+  <text x="230" y="276" fill="#202522" font-family="Georgia,serif" font-size="36">A FESTIVE OPENING</text>
+  <text x="230" y="406" fill="#202522" font-family="Georgia,serif" font-size="36">CULTURAL ACTS</text>
+  <text x="230" y="536" fill="#202522" font-family="Georgia,serif" font-size="36">GARBA TOGETHER</text>
+  <text x="230" y="666" fill="#202522" font-family="Georgia,serif" font-size="36">CLOSING MOMENT</text>
+  <text x="360" y="850" text-anchor="middle" fill="#63857e" font-family="Arial,sans-serif" font-size="18" letter-spacing="4">DETAILED SCHEDULE TO BE ANNOUNCED</text>
+</svg>
